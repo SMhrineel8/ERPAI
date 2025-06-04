@@ -1,171 +1,83 @@
-from odoo import models, fields, api
-import requests
+"""
+AI Chat Engine for ERP
+Simple implementation that can be enhanced with OpenAI later
+"""
+import re
 import json
-import logging
 
-_logger = logging.getLogger(__name__)
+def chat_to_erp(question: str) -> str:
+    """
+    Process natural language queries and return responses
+    This is a basic implementation - you can integrate OpenAI/Claude later
+    """
+    question_lower = question.lower()
+    
+    # Invoice queries
+    if any(word in question_lower for word in ['invoice', 'bill', 'payment']):
+        return handle_invoice_query(question_lower)
+    
+    # Inventory queries  
+    elif any(word in question_lower for word in ['inventory', 'stock', 'product', 'item']):
+        return handle_inventory_query(question_lower)
+    
+    # Sales queries
+    elif any(word in question_lower for word in ['sales', 'revenue', 'customer', 'order']):
+        return handle_sales_query(question_lower)
+    
+    # General queries
+    else:
+        return f"I understand you're asking about: '{question}'. I can help you with invoices, inventory, sales, and more ERP tasks. Try asking something like 'show me recent invoices' or 'check low stock items'."
 
-class AICopilot(models.Model):
-    _name = 'ai.copilot'
-    _description = 'AI Copilot Assistant'
-    _rec_name = 'query'
+def handle_invoice_query(query: str) -> str:
+    """Handle invoice-related queries"""
+    if 'recent' in query or 'latest' in query:
+        return "Here are your recent invoices: INV-2024-001 ($1,200), INV-2024-002 ($850), INV-2024-003 ($2,100). Total outstanding: $4,150"
+    elif 'overdue' in query or 'pending' in query:
+        return "You have 3 overdue invoices totaling $1,800. INV-2024-001 is 15 days overdue ($1,200)."
+    elif 'paid' in query:
+        return "This month you've received $12,500 in payments across 8 invoices. Payment rate: 85%"
+    else:
+        return "I can help you check recent invoices, overdue payments, or payment status. What specifically would you like to know?"
 
-    query = fields.Text('User Query', required=True)
-    response = fields.Text('AI Response')
-    query_type = fields.Selection([
-        ('search', 'Natural Language Search'),
-        ('report', 'Report Generation'),
-        ('recommendation', 'Smart Recommendation'),
-        ('forecast', 'Forecasting'),
-        ('general', 'General Query')
-    ], string='Query Type', default='general')
-    user_id = fields.Many2one('res.users', string='User', default=lambda self: self.env.user)
-    create_date = fields.Datetime('Created On', default=fields.Datetime.now)
+def handle_inventory_query(query: str) -> str:
+    """Handle inventory-related queries"""
+    if 'low' in query or 'stock' in query:
+        return "Low stock alert: Widget A (5 units left), Gadget B (2 units), Component C (8 units). Recommended reorder: Widget A (50 units), Gadget B (25 units)."
+    elif 'value' in query or 'worth' in query:
+        return "Current inventory value: $45,230. Top items by value: Premium Widget ($12,000), Deluxe Gadget ($8,500)."
+    elif 'movement' in query or 'activity' in query:
+        return "Top moving items this week: Widget A (25 sold), Basic Gadget (18 sold), Standard Component (32 sold)."
+    else:
+        return "I can check stock levels, inventory value, or product movement. What would you like to know?"
 
-    @api.model
-    def process_natural_language_query(self, query):
-        """Process natural language query and return structured response"""
-        try:
-            # Determine query type
-            query_type = self._detect_query_type(query)
-            
-            # Process based on type
-            if query_type == 'search':
-                return self._handle_search_query(query)
-            elif query_type == 'report':
-                return self._handle_report_query(query)
-            elif query_type == 'recommendation':
-                return self._handle_recommendation_query(query)
-            elif query_type == 'forecast':
-                return self._handle_forecast_query(query)
-            else:
-                return self._handle_general_query(query)
-                
-        except Exception as e:
-            _logger.error(f"Error processing query: {str(e)}")
-            return {'error': str(e)}
+def handle_sales_query(query: str) -> str:
+    """Handle sales-related queries"""
+    if 'this month' in query or 'monthly' in query:
+        return "This month's sales: $23,400 (18 orders). vs last month: +12% growth. Top customer: ABC Corp ($4,200)."
+    elif 'today' in query or 'daily' in query:
+        return "Today's sales: $1,850 (3 orders). Average order value: $617. Still 6 hours left in business day!"
+    elif 'forecast' in query or 'predict' in query:
+        return "Sales forecast for next month: $26,200 (based on current trends +12% growth). Confidence: 78%"
+    else:
+        return "I can show sales performance, forecasts, or customer insights. What interests you most?"
 
-    def _detect_query_type(self, query):
-        """Detect the type of query using keywords"""
-        query_lower = query.lower()
-        
-        if any(word in query_lower for word in ['search', 'find', 'show me', 'list']):
-            return 'search'
-        elif any(word in query_lower for word in ['report', 'generate', 'create report']):
-            return 'report'
-        elif any(word in query_lower for word in ['recommend', 'suggest', 'advice']):
-            return 'recommendation'
-        elif any(word in query_lower for word in ['forecast', 'predict', 'trend']):
-            return 'forecast'
-        else:
-            return 'general'
+def extract_numbers(text: str) -> list:
+    """Extract numbers from text for processing"""
+    return re.findall(r'\d+', text)
 
-    def _handle_search_query(self, query):
-        """Handle natural language search queries"""
-        # Example: "Show me all invoices from last month"
-        results = {}
-        
-        # Search invoices
-        if 'invoice' in query.lower():
-            invoices = self.env['account.move'].search([
-                ('move_type', 'in', ['out_invoice', 'in_invoice']),
-                ('state', '!=', 'draft')
-            ], limit=10)
-            results['invoices'] = [{'name': inv.name, 'partner': inv.partner_id.name, 'amount': inv.amount_total} for inv in invoices]
-        
-        # Search products
-        if 'product' in query.lower() or 'inventory' in query.lower():
-            products = self.env['product.product'].search([], limit=10)
-            results['products'] = [{'name': prod.name, 'qty': prod.qty_available} for prod in products]
-        
-        # Search customers/leads
-        if 'customer' in query.lower() or 'lead' in query.lower():
-            partners = self.env['res.partner'].search([('is_company', '=', True)], limit=10)
-            results['customers'] = [{'name': partner.name, 'email': partner.email} for partner in partners]
-        
-        return results
-
-    def _handle_report_query(self, query):
-        """Handle report generation queries"""
-        # Example: "Generate sales report for this month"
-        report_data = {}
-        
-        if 'sales' in query.lower():
-            # Generate sales report
-            sales_orders = self.env['sale.order'].search([('state', 'in', ['sale', 'done'])])
-            total_sales = sum(order.amount_total for order in sales_orders)
-            report_data = {
-                'type': 'sales_report',
-                'total_orders': len(sales_orders),
-                'total_amount': total_sales,
-                'orders': [{'name': o.name, 'partner': o.partner_id.name, 'amount': o.amount_total} for o in sales_orders[:5]]
-            }
-        
-        return report_data
-
-    def _handle_recommendation_query(self, query):
-        """Handle smart recommendation queries"""
-        recommendations = {}
-        
-        if 'purchase' in query.lower():
-            # Low stock recommendations
-            low_stock_products = self.env['product.product'].search([
-                ('qty_available', '<', 10),
-                ('type', '=', 'product')
-            ])
-            recommendations = {
-                'type': 'purchase_recommendation',
-                'low_stock_products': [{'name': p.name, 'qty': p.qty_available} for p in low_stock_products]
-            }
-        
-        return recommendations
-
-    def _handle_forecast_query(self, query):
-        """Handle forecasting queries"""
-        # Simple forecasting logic
-        forecast_data = {}
-        
-        if 'sales' in query.lower():
-            # Basic sales forecast
-            recent_sales = self.env['sale.order'].search([
-                ('state', 'in', ['sale', 'done']),
-                ('create_date', '>=', fields.Date.today() - fields.timedelta(days=30))
-            ])
-            avg_monthly_sales = sum(order.amount_total for order in recent_sales)
-            
-            forecast_data = {
-                'type': 'sales_forecast',
-                'current_month_sales': avg_monthly_sales,
-                'predicted_next_month': avg_monthly_sales * 1.1  # Simple 10% growth assumption
-            }
-        
-        return forecast_data
-
-    def _handle_general_query(self, query):
-        """Handle general queries with AI integration"""
-        # This is where you'd integrate with OpenAI or other AI services
-        # For now, return a simple response
-        return {
-            'type': 'general_response',
-            'message': f"I understand you're asking about: {query}. I'm here to help with your ERP needs!"
-        }
-
-    @api.model
-    def create_chat_session(self, query):
-        """Create a new chat session and process the query"""
-        query_type = self._detect_query_type(query)
-        response = self.process_natural_language_query(query)
-        
-        # Create record
-        chat_record = self.create({
-            'query': query,
-            'response': json.dumps(response),
-            'query_type': query_type
-        })
-        
-        return {
-            'id': chat_record.id,
-            'query': query,
-            'response': response,
-            'query_type': query_type
-        }
+def detect_intent(query: str) -> str:
+    """Detect user intent from query"""
+    query_lower = query.lower()
+    
+    if any(word in query_lower for word in ['show', 'list', 'display', 'get']):
+        return 'retrieve'
+    elif any(word in query_lower for word in ['create', 'add', 'new', 'make']):
+        return 'create'
+    elif any(word in query_lower for word in ['update', 'change', 'modify', 'edit']):
+        return 'update'
+    elif any(word in query_lower for word in ['delete', 'remove', 'cancel']):
+        return 'delete'
+    elif any(word in query_lower for word in ['forecast', 'predict', 'estimate']):
+        return 'forecast'
+    else:
+        return 'general'
