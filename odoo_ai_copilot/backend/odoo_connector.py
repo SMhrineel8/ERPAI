@@ -1,9 +1,10 @@
 """
 Odoo Connector - connects to Odoo via XML-RPC
-For now, returns mock data. You can connect to real Odoo later.
+Uses environment variables from Render for real connections
 """
 import requests
 import json
+import os
 from datetime import datetime, timedelta
 
 # Mock data for testing
@@ -23,12 +24,15 @@ MOCK_INVENTORY = [
     {"id": 5, "name": "Standard Part", "sku": "PAR-001", "qty_available": 2, "value": 800, "category": "Parts"},
 ]
 
+import os
+
 class OdooConnector:
     def __init__(self, url=None, db=None, username=None, password=None):
-        self.url = url or "http://localhost:8069"
-        self.db = db or "demo_db"
-        self.username = username or "admin"
-        self.password = password or "admin"
+        self.url = url or os.getenv("ODOO_URL", "http://localhost:8069")
+        self.db = db or os.getenv("ODOO_DB", "demo_db")
+        self.username = username or os.getenv("ODOO_USER", "admin")
+        self.password = password or os.getenv("ODOO_PASSWORD", "admin")
+        self.api_key = os.getenv("ODOO_API_KEY")
         self.uid = None
         self.connected = False
     
