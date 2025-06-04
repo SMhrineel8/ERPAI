@@ -1,10 +1,20 @@
-FROM python:3.10-slim
+# Use an official Python runtime
+FROM python:3.11-slim
 
-WORKDIR /app/backend/ai
+# Set working directory
+WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy files
+COPY backend/ ./backend/
 
-COPY . .
+# Set env
+ENV PYTHONPATH="${PYTHONPATH}:/app/backend"
 
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Install dependencies
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+# Expose port
+EXPOSE 8000
+
+# Run the app
+CMD ["uvicorn", "backend.ai.main:app", "--host", "0.0.0.0", "--port", "8000"]
