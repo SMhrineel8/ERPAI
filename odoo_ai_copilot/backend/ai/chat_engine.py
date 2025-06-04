@@ -1,15 +1,28 @@
 """
 AI Chat Engine for ERP
-Simple implementation that can be enhanced with OpenAI later
+Uses OpenAI API when available, falls back to rule-based responses
 """
 import re
 import json
+import os
+import requests
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 def chat_to_erp(question: str) -> str:
     """
     Process natural language queries and return responses
-    This is a basic implementation - you can integrate OpenAI/Claude later
+    Uses OpenAI if API key is available, otherwise uses rule-based logic
     """
+    # Try OpenAI first if API key is available
+    if OPENAI_API_KEY:
+        try:
+            return get_openai_response(question)
+        except Exception as e:
+            print(f"OpenAI API error: {e}")
+            # Fall back to rule-based response
+    
+    # Rule-based response as fallback
     question_lower = question.lower()
     
     # Invoice queries
@@ -27,6 +40,36 @@ def chat_to_erp(question: str) -> str:
     # General queries
     else:
         return f"I understand you're asking about: '{question}'. I can help you with invoices, inventory, sales, and more ERP tasks. Try asking something like 'show me recent invoices' or 'check low stock items'."
+
+def get_openai_response(question: str) -> str:
+    """Get response from OpenAI API"""
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    data = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {"role": "system", "content": "You are an AI assistant for ERP systems. Help users with invoices, inventory, sales, and business operations. Be concise and helpful."},
+            {"role": "user", "content": question}
+        ],
+        "max_tokens": 150,
+        "temperature": 0.7
+    }
+    
+    response = requests.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers=headers,
+        json=data,
+        timeout=10
+    )
+    
+    if response.status_code == 200:
+        result = response.json()
+        return result["choices"][0]["message"]["content"].strip()
+    else:
+        raise Exception(f"OpenAI API error: {response.status_code}")
 
 def handle_invoice_query(query: str) -> str:
     """Handle invoice-related queries"""
