@@ -57,6 +57,6 @@ async def api_inventory():
         raise HTTPException(status_code=500, detail=f"Inventory fetch error: {str(e)}")
 
 # Run the app
-if __name__ == "__main__":
+if __name__ == "__main__":  # 🔥 FIXED: Double underscores, not asterisks!
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
