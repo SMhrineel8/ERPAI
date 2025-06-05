@@ -20,8 +20,10 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY . .
 
-# Set environment variables
-ENV PYTHONPATH="${PYTHONPATH}:/app"
+# ✅ Fix PYTHONPATH so that 'ai' inside backend is accessible
+ENV PYTHONPATH="${PYTHONPATH}:/app/odoo_ai_copilot/backend"
+
+# Set unbuffered mode for logging
 ENV PYTHONUNBUFFERED=1
 
 # Expose port
