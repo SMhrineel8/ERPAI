@@ -5,8 +5,8 @@ import os
 
 # Import your modules (make sure these files exist)
 try:
-    from ai_erp_copilot.ai.chat_engine import ChatEngine
-    from ai_erp_copilot.odoo_connector import fetch_invoices, fetch_inventory
+   from ai_erp_copilot.ai.chat_engine import chat_to_erp
+   from ai_erp_copilot.odoo_connector import fetch_invoices, fetch_inventory
 except ImportError as e:
     print(f"Import error: {e}")
     # Fallback functions if imports fail
