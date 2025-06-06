@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY . .
 
 # ✅ Fix PYTHONPATH so that 'ai' inside backend is accessible
-ENV PYTHONPATH="${PYTHONPATH}:/app/ai.erp.copilot"
+ENV PYTHONPATH="/app"
 
 # Set unbuffered mode for logging
 ENV PYTHONUNBUFFERED=1
