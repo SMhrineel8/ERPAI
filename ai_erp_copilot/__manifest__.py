@@ -2,15 +2,16 @@
     'name': 'AI Copilot for ERP',
     'version': '16.0.1.0.0',
     'category': 'Tools',
-    'summary': 'AI-powered ERP assistant with natural language processing',
+    'summary': '⚡ AI-powered ERP assistant: Talk to Odoo in plain English',
     'description': """
-        AI Copilot Plugin for ERPs
-        ==========================
-        * Natural Language Search across invoices, leads, inventory
-        * Auto-Generate Reports (Sales, Tax, HR, P&L) with GPT
-        * Smart Recommendations (purchase planning, employee performance)
-        * Chat Interface to manage the ERP via plain English
-        * Forecasting & Alerts (low stock, missed invoices, revenue drops)
+        <p><strong>AI Copilot Plugin for Odoo ERP</strong></p>
+        <ul>
+            <li>💬 Natural Language Search across invoices, leads, inventory</li>
+            <li>📊 Auto-Generate Reports (Sales, Tax, HR, P&L) using GPT</li>
+            <li>📦 Smart Recommendations (purchase, performance, reordering)</li>
+            <li>🤖 Chat Interface to manage the ERP in English</li>
+            <li>🔮 Forecasting & Alerts (low stock, invoice delays, revenue drops)</li>
+        </ul>
     """,
     'author': 'Your Company',
     'website': 'https://github.com/SMhrineel8/odoo_ai_copilot',
@@ -31,8 +32,8 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'ai_copilot/static/src/js/ai_chat_widget.js',
-            'ai_copilot/static/src/css/ai_copilot.css',
+            'ai_erp_copilot/static/src/js/ai_chat_widget.js',
+            'ai_erp_copilot/static/src/css/ai_copilot.css',
         ],
     },
     'installable': True,
