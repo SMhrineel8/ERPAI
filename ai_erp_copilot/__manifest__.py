@@ -16,6 +16,8 @@
     'author': 'Your Company',
     'website': 'https://github.com/SMhrineel8/odoo_ai_copilot',
     'license': 'LGPL-3',
+    'price': 119,                  # EUR or USD
+    'currency': 'USD',
     'depends': [
         'base',
         'sale',
