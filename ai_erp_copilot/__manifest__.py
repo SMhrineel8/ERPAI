@@ -4,6 +4,8 @@
     'category': 'Tools',
     'summary': '⚡ AI-powered ERP assistant: Talk to Odoo in plain English',
     'description': """
+            file: static/description/index.html
+
         <p><strong>AI Copilot Plugin for Odoo ERP</strong></p>
         <ul>
             <li>💬 Natural Language Search across invoices, leads, inventory</li>
