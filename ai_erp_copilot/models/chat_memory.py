@@ -1,4 +1,3 @@
-# models/chat_memory.py
 from odoo import models, fields, api
 import json
 
