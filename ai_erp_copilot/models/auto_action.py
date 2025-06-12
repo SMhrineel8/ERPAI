@@ -1,4 +1,3 @@
-# models/auto_action.py
 from odoo import models, fields, api
 import json
 import re
